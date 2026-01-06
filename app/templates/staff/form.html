@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Staff" if staff else "Add Staff" }} - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="mb-3">{{ "Edit Staff" if staff else "Add Staff" }}</h3>
+
+    <form method="post" action="{{ url_for('staff.update_staff', staff_id=staff.id) if staff else url_for('staff.create_staff') }}">
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input class="form-control" name="full_name" required value="{{ staff.full_name if staff else '' }}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Gender</label>
+        <select class="form-select" name="gender" required>
+          <option value="" disabled {% if not staff %}selected{% endif %}>Select gender</option>
+          {% for g in genders %}
+            <option value="{{ g }}" {% if staff and staff.gender == g %}selected{% endif %}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Phone (optional)</label>
+        <input class="form-control" name="phone" value="{{ staff.phone if staff else '' }}">
+      </div>
+
+      {% if staff %}
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if staff.is_active %}checked{% endif %}>
+        <label class="form-check-label" for="is_active">Active</label>
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">{{ "Save Changes" if staff else "Create Staff" }}</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('staff.list_staff') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

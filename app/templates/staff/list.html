@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Staff - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Staff</h3>
+    <div class="text-muted small">Manage staff records (admin-only).</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('staff.new_staff') }}">+ Add Staff</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6">
+    <input class="form-control" name="q" placeholder="Search by name..." value="{{ q }}">
+  </div>
+  <div class="col-md-3 form-check d-flex align-items-center">
+    <input class="form-check-input me-2" type="checkbox" id="inactive" name="inactive" value="1" {% if show_inactive %}checked{% endif %}>
+    <label class="form-check-label" for="inactive">Show inactive</label>
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-outline-secondary w-100">Search</button>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Name</th>
+          <th>Gender</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in staff %}
+        <tr>
+          <td>{{ s.full_name }}</td>
+          <td>{{ s.gender }}</td>
+          <td>{{ s.phone or "-" }}</td>
+          <td>
+            {% if s.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('staff.edit_staff', staff_id=s.id) }}">Edit</a>
+            <form class="d-inline" method="post" action="{{ url_for('staff.toggle_staff', staff_id=s.id) }}">
+              {% if s.is_active %}
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Deactivate this staff?')">Deactivate</button>
+              {% else %}
+                <button class="btn btn-sm btn-outline-success" onclick="return confirm('Activate this staff?')">Activate</button>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if staff|length == 0 %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">No staff found.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

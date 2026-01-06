@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Weekly Schedule - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Weekly Schedule</h3>
+    <div class="text-muted small">
+      Bi-week: {{ bw_start }} (Fri) → {{ bw_end_display }} (Thu)
+    </div>
+    <div class="text-muted small">
+      Week 1: {{ week1_start }} → {{ week1_end_display }} • Week 2: {{ week2_start }} → {{ week2_end_display }}
+    </div>
+  </div>
+</div>
+
+<form class="row g-2 align-items-end mb-3" method="get" action="/schedule/">
+  <div class="col-auto">
+    <label class="form-label">Pick any date in the week</label>
+    <input class="form-control" type="date" name="date" value="{{ qdate.strftime('%Y-%m-%d') }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Go</button>
+  </div>
+</form>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-2">By Unit</h5>
+        <div class="list-group">
+          {% for u in units %}
+            <a class="list-group-item list-group-item-action"
+               href="/schedule/unit/{{ u.id }}?date={{ qdate.strftime('%Y-%m-%d') }}">
+              {{ u.unit_name }}
+            </a>
+          {% endfor %}
+          {% if units|length == 0 %}
+            <div class="text-muted">No units found.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-2">By Staff</h5>
+        <div class="list-group">
+          {% for s in staff %}
+            <a class="list-group-item list-group-item-action"
+               href="/schedule/staff/{{ s.id }}?date={{ qdate.strftime('%Y-%m-%d') }}">
+              {{ s.full_name }}
+            </a>
+          {% endfor %}
+          {% if staff|length == 0 %}
+            <div class="text-muted">No staff found.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

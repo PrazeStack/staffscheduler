@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Assignments - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Assignments</h3>
+    <div class="text-muted small">Schedule staff to units (overlap is blocked).</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('assignments.new_assignment') }}">+ New Assignment</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-3">
+    <label class="form-label small text-muted mb-1">Staff</label>
+    <select class="form-select" name="staff_id">
+      <option value="">All staff</option>
+      {% for s in staff_list %}
+        <option value="{{ s.id }}" {% if staff_id == s.id %}selected{% endif %}>{{ s.full_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label small text-muted mb-1">Unit</label>
+    <select class="form-select" name="unit_id">
+      <option value="">All units</option>
+      {% for u in unit_list %}
+        <option value="{{ u.id }}" {% if unit_id == u.id %}selected{% endif %}>{{ u.unit_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label small text-muted mb-1">From</label>
+    <input class="form-control" type="date" name="from" value="{{ date_from }}">
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label small text-muted mb-1">To</label>
+    <input class="form-control" type="date" name="to" value="{{ date_to }}">
+  </div>
+
+  <div class="col-md-2 d-flex align-items-end">
+    <button class="btn btn-outline-secondary w-100">Filter</button>
+  </div>
+
+  <div class="col-12">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="canceled" name="canceled" value="1" {% if show_canceled %}checked{% endif %}>
+      <label class="form-check-label" for="canceled">Show canceled</label>
+    </div>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Staff</th>
+          <th>Unit</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in assignments %}
+        <tr>
+          <td>{{ a.start_datetime.strftime("%Y-%m-%d") }}</td>
+          <td>{{ a.start_datetime.strftime("%H:%M") }} - {{ a.end_datetime.strftime("%H:%M") }}</td>
+          <td>{{ a.staff.full_name }}</td>
+          <td>{{ a.unit.unit_name }}</td>
+          <td>
+            {% if a.status == "Scheduled" %}
+              <span class="badge bg-primary">Scheduled</span>
+            {% elif a.status == "Confirmed" %}
+              <span class="badge bg-success">Confirmed</span>
+            {% else %}
+              <span class="badge bg-secondary">Canceled</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('assignments.edit_assignment', assignment_id=a.id) }}">Edit</a>
+            {% if a.status != "Canceled" %}
+            <form class="d-inline" method="post" action="{{ url_for('assignments.cancel_assignment', assignment_id=a.id) }}">
+              <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Cancel this assignment?')">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% if assignments|length == 0 %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">No assignments found.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

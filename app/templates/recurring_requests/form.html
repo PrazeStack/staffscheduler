@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if rr else "New" }} Recurring Request - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="mb-3">{{ "Edit" if rr else "New" }} Recurring Request</h3>
+
+    <form method="post" action="{{ '/recurring-requests/%d/edit'|format(rr.id) if rr else '/recurring-requests/new' }}">
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <label class="form-label">Unit</label>
+          <select class="form-select" name="unit_id" required>
+            <option value="" disabled {% if not rr %}selected{% endif %}>Select unit</option>
+            {% for u in unit_list %}
+              <option value="{{ u.id }}" {% if rr and rr.unit_id == u.id %}selected{% endif %}>
+                {{ u.unit_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Coordinator name</label>
+          <input class="form-control" name="coordinator_name" required value="{{ rr.coordinator_name if rr else '' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Staff needed</label>
+          <input class="form-control" type="number" min="1" name="staff_needed" required
+                 value="{{ rr.staff_needed if rr else '' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Start time</label>
+          <input class="form-control" type="time" name="start_time" required value="{{ rr.start_time if rr else '' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">End time</label>
+          <input class="form-control" type="time" name="end_time" required value="{{ rr.end_time if rr else '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Start date</label>
+          <input class="form-control" type="date" name="start_date" required
+                 value="{{ rr.start_date.strftime('%Y-%m-%d') if rr else '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">End date (blank = until changed)</label>
+          <input class="form-control" type="date" name="end_date"
+                 value="{{ rr.end_date.strftime('%Y-%m-%d') if rr and rr.end_date else '' }}">
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Days of week</label>
+          <div class="d-flex flex-wrap gap-3">
+            {% for code,label in [("MO","Mon"),("TU","Tue"),("WE","Wed"),("TH","Thu"),("FR","Fri"),("SA","Sat"),("SU","Sun")] %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="days" value="{{ code }}"
+                       id="d{{ code }}" {% if code in selected_days %}checked{% endif %}>
+                <label class="form-check-label" for="d{{ code }}">{{ label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="form-text">Select the weekdays this request repeats.</div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-control" name="notes" rows="3">{{ rr.notes if rr else '' }}</textarea>
+        </div>
+
+        {% if rr %}
+        <div class="col-12">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                   {% if rr.is_active %}checked{% endif %}>
+            <label class="form-check-label" for="is_active">Active</label>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary">{{ "Save" if rr else "Create" }}</button>
+        <a class="btn btn-outline-secondary" href="/recurring-requests/">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

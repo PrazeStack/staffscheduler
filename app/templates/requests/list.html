@@ -1,0 +1,69 @@
+
+{% extends "base.html" %}
+{% block title %}Requests - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Requests</h3>
+    <div class="text-muted small">Multiple requests per unit/location are supported.</div>
+  </div>
+  <a class="btn btn-primary" href="/requests/new">+ New Request</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>When</th>
+          <th>Unit</th>
+          <th>Coordinator</th>
+          <th>Needed</th>
+          <th>Filled</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          {% set r = row.r %}
+          <tr>
+            <td>
+              {{ r.start_datetime.strftime("%Y-%m-%d") }}
+              <div class="text-muted small">{{ r.start_datetime.strftime("%H:%M") }} - {{ r.end_datetime.strftime("%H:%M") }}</div>
+            </td>
+            <td>{{ r.unit.unit_name }}</td>
+            <td>{{ r.coordinator_name }}</td>
+            <td>{{ r.staff_needed }}</td>
+            <td>{{ row.filled }}</td>
+            <td>
+              {% if r.status == "Canceled" %}
+                <span class="badge bg-secondary">Canceled</span>
+              {% elif row.sat %}
+                <span class="badge bg-success">Satisfied</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Open</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="/requests/{{ r.id }}">View</a>
+              <a class="btn btn-sm btn-outline-secondary" href="/requests/{{ r.id }}/edit">Edit</a>
+              {% if r.status != "Canceled" %}
+              <form class="d-inline" method="post" action="/requests/{{ r.id }}/cancel">
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Cancel this request?')">Cancel</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        {% if rows|length == 0 %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">No requests found.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

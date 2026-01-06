@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Assignment" if assignment else "New Assignment" }} - Staff Scheduler{% endblock %}
+
+{# Prefill from assignment (edit) or request (new-from-request) #}
+{% set start_dt = assignment.start_datetime if assignment else (req.start_datetime if req else None) %}
+{% set end_dt = assignment.end_datetime if assignment else (req.end_datetime if req else None) %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="mb-3">{{ "Edit Assignment" if assignment else "New Assignment" }}</h3>
+
+    {% if req and not assignment %}
+    <div class="alert alert-info">
+      Prefilled from Request #{{ req.id }} — you can adjust unit and times if needed.
+    </div>
+    {% endif %}
+
+    <form method="post"
+          action="{{ url_for('assignments.update_assignment', assignment_id=assignment.id) if assignment else url_for('assignments.create_assignment') }}">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Staff</label>
+          <select class="form-select" name="staff_id" required>
+            <option value="" disabled {% if not assignment %}selected{% endif %}>Select staff</option>
+            {% for s in staff_list %}
+              <option value="{{ s.id }}"
+                {% if assignment and assignment.staff_id == s.id %}selected{% endif %}>
+                {{ s.full_name }}{% if not s.is_active %} (inactive){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Unit</label>
+          <select class="form-select" id="unit_id" name="unit_id" required>
+            <option value="" disabled {% if not assignment and not req %}selected{% endif %}>Select unit</option>
+            {% for u in unit_list %}
+              <option value="{{ u.id }}"
+                {% if assignment and assignment.unit_id == u.id %}selected{% endif %}
+                {% if req and req.unit_id == u.id and not assignment %}selected{% endif %}>
+                {{ u.unit_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Request (optional)</label>
+       <select class="form-select" id="request_id" name="request_id">
+  <option value=""
+    data-unit=""
+    data-date=""
+    data-start=""
+    data-end=""
+    data-notes="">
+    No request
+  </option>
+
+  {% for r in requests %}
+    <option value="{{ r.id }}"
+      data-unit="{{ r.unit_id }}"
+      data-date="{{ r.start_datetime.strftime('%Y-%m-%d') }}"
+      data-start="{{ r.start_datetime.strftime('%H:%M') }}"
+      data-end="{{ r.end_datetime.strftime('%H:%M') }}"
+      data-notes="{{ r.notes|default('', true)|e }}"
+      {% if assignment and assignment.request_id == r.id %}selected{% endif %}
+      {% if req and req.id == r.id and not assignment %}selected{% endif %}>
+      #{{ r.id }} — {{ r.unit.unit_name }} — {{ r.coordinator_name }}
+    </option>
+  {% endfor %}
+</select>
+
+          <div class="form-text">
+            Selecting a request will auto-fill Unit + Date + Time. You can still edit afterward.
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Date</label>
+          <input class="form-control" id="date" type="date" name="date" required
+                 value="{{ start_dt.strftime('%Y-%m-%d') if start_dt else '' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Start time</label>
+          <input class="form-control" id="start_time" type="time" name="start_time" required
+                 value="{{ start_dt.strftime('%H:%M') if start_dt else '' }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">End time</label>
+          <input class="form-control" id="end_time" type="time" name="end_time" required
+                 value="{{ end_dt.strftime('%H:%M') if end_dt else '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="status">
+            {% for s in status_options %}
+              <option value="{{ s }}"
+                {% if assignment and assignment.status == s %}selected{% endif %}
+                {% if not assignment and s == "Scheduled" %}selected{% endif %}>
+                {{ s }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-control" id="notes" name="notes" rows="3">
+            {{ assignment.notes if assignment else '' }}
+          </textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary">{{ "Save Changes" if assignment else "Create Assignment" }}</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('assignments.list_assignments') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const requestSelect = document.getElementById("request_id");
+  const unitSelect = document.getElementById("unit_id");
+  const dateInput = document.getElementById("date");
+  const startInput = document.getElementById("start_time");
+  const endInput = document.getElementById("end_time");
+  const notesInput = document.getElementById("notes");
+
+  if (!requestSelect) return;
+
+  function applyRequestPrefill() {
+    const opt = requestSelect.options[requestSelect.selectedIndex];
+    if (!opt) return;
+
+    const unitId = opt.dataset.unit || "";
+    const date = opt.dataset.date || "";
+    const start = opt.dataset.start || "";
+    const end = opt.dataset.end || "";
+    const reqNotes = opt.dataset.notes || "";
+
+    // Do nothing for "No request"
+    if (!unitId && !date && !start && !end && !reqNotes) return;
+
+    if (unitId) unitSelect.value = unitId;
+    if (date) dateInput.value = date;
+    if (start) startInput.value = start;
+    if (end) endInput.value = end;
+
+    // Append request notes (don’t overwrite)
+    if (reqNotes && notesInput) {
+      const existing = notesInput.value.trim();
+
+      if (!existing.includes(reqNotes)) {
+        notesInput.value = existing
+          ? existing + "\n\n[Request notes]\n" + reqNotes
+          : "[Request notes]\n" + reqNotes;
+      }
+    }
+  }
+
+  requestSelect.addEventListener("change", applyRequestPrefill);
+})();
+</script>
+{% endblock %}

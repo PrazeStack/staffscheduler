@@ -1,0 +1,79 @@
+                                                                                                                                                                                                                                                                                                                                                                                                                                     {% extends "base.html" %}
+{% block title %}Request #{{ r.id }} - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Request #{{ r.id }}</h3>
+    <div class="text-muted small">
+      {{ r.unit.unit_name }} • {{ r.start_datetime.strftime("%a %b %d, %Y %I:%M %p") }}
+      → {{ r.end_datetime.strftime("%I:%M %p") }}
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('requests.edit_request', request_id=r.id) }}">Edit</a>
+
+    <!-- Prefill assignment from request -->
+    <a class="btn btn-primary"
+       href="{{ url_for('assignments.new_assignment') }}?request_id={{ r.id }}">
+      Assign staff
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-2">Request Info</h5>
+        <div><b>Coordinator:</b> {{ r.coordinator_name }}</div>
+        <div><b>Staff needed:</b> {{ r.staff_needed }}</div>
+        <div><b>Status:</b>
+          {% if sat %}
+            <span class="badge bg-success">Satisfied</span>
+          {% elif r.status == "Canceled" %}
+            <span class="badge bg-secondary">Canceled</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">Open</span>
+          {% endif %}
+        </div>
+
+        {% if r.notes %}
+          <hr>
+          <div><b>Notes:</b><br>{{ r.notes }}</div>
+        {% endif %}
+
+        {% if r.recurring_id %}
+          <hr>
+          <div class="small text-muted">
+            Generated from recurring request #{{ r.recurring_id }}
+            {% if r.occurrence_date %} ({{ r.occurrence_date }}){% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="mb-2">Coverage</h5>
+        <div class="mb-2">
+          Assigned: <b>{{ filled }}</b> / <b>{{ r.staff_needed }}</b>
+        </div>
+
+        {% if overlaps and overlaps|length > 0 %}
+          <div class="alert alert-warning mb-2">
+            Overlaps detected for some staff assignments (check scheduling).
+          </div>
+        {% endif %}
+
+        <a class="btn btn-sm btn-primary"
+           href="{{ url_for('assignments.new_assignment') }}?request_id={{ r.id }}">
+          Add another assignment
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

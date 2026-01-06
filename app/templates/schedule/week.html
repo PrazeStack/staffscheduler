@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - Weekly Schedule{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">{{ title }}</h3>
+    <div class="text-muted small">Week: {{ wk_start }} (Sat) → {{ wk_end_display }} (Fri)</div>
+    {% if mode == "staff" %}
+      <div class="text-muted small">Total hours this week: <b>{{ "%.2f"|format(total_hours) }}</b> hrs</div>
+    {% endif %}
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/schedule/?date={{ qdate.strftime('%Y-%m-%d') }}">Back</a>
+  </div>
+</div>
+
+<form class="row g-2 align-items-end mb-3" method="get">
+  <div class="col-auto">
+    <label class="form-label">Pick any date in the week</label>
+    <input class="form-control" type="date" name="date" value="{{ qdate.strftime('%Y-%m-%d') }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Go</button>
+  </div>
+</form>
+
+<div class="row g-3">
+  {% for day in days %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <b>{{ day.label }}</b>
+          <div class="text-muted small">{{ day.date }}</div>
+        </div>
+        <span class="badge bg-secondary">{{ day.assignments|length }}</span>
+      </div>
+
+      <div class="card-body">
+        {% if day.assignments|length == 0 %}
+          <div class="text-muted">No assignments</div>
+        {% else %}
+          <ul class="list-group list-group-flush">
+            {% for a in day.assignments %}
+              <li class="list-group-item px-0">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    {% if mode == "unit" %}
+                      <b>{{ a.staff.full_name }}</b>
+                    {% else %}
+                      <b>{{ a.unit.unit_name }}</b>
+                    {% endif %}
+
+                    <div class="text-muted small">
+                      {{ a.start_datetime.strftime("%I:%M %p") }} → {{ a.end_datetime.strftime("%I:%M %p") }}
+                      {% if a.request_id %} • Req #{{ a.request_id }}{% endif %}
+                    </div>
+
+                    {% if a.notes %}
+                      <div class="small">{{ a.notes }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="text-end">
+                    <span class="badge bg-light text-dark">{{ a.status }}</span>
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

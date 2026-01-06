@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Recurring Requests - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Recurring Requests</h3>
+    <div class="text-muted small">Weekly requests on selected days, until changed.</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="/recurring-requests/new">+ New Recurring Request</a>
+    <form method="post" action="/recurring-requests/generate">
+      <input type="hidden" name="horizon_days" value="28">
+      <button class="btn btn-outline-success">Generate next 4 weeks</button>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Unit</th>
+          <th>Days</th>
+          <th>Time</th>
+          <th>Needed</th>
+          <th>Coordinator</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rr in rrs %}
+        <tr>
+          <td>{{ rr.unit.unit_name }}</td>
+          <td>{{ codes_from_mask(rr.days_mask)|join(", ") }}</td>
+          <td>{{ rr.start_time }} - {{ rr.end_time }}</td>
+          <td>{{ rr.staff_needed }}</td>
+          <td>{{ rr.coordinator_name }}</td>
+          <td>
+            {% if rr.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Paused</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary" href="/recurring-requests/{{ rr.id }}/edit">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if rrs|length == 0 %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">No recurring requests yet.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

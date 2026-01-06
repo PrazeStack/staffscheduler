@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Units - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h3 class="mb-0">Units</h3>
+    <div class="text-muted small">Manage unit/location records.</div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('units.new_unit') }}">+ Add Unit</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6">
+    <input class="form-control" name="q" placeholder="Search by unit name..." value="{{ q }}">
+  </div>
+  <div class="col-md-3 form-check d-flex align-items-center">
+    <input class="form-check-input me-2" type="checkbox" id="inactive" name="inactive" value="1" {% if show_inactive %}checked{% endif %}>
+    <label class="form-check-label" for="inactive">Show inactive</label>
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-outline-secondary w-100">Search</button>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-striped mb-0 align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Unit</th>
+          <th>Address</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in units %}
+        <tr>
+          <td>{{ u.unit_name }}</td>
+          <td>{{ u.address or "-" }}</td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('units.edit_unit', unit_id=u.id) }}">Edit</a>
+            <form class="d-inline" method="post" action="{{ url_for('units.toggle_unit', unit_id=u.id) }}">
+              {% if u.is_active %}
+                <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Deactivate this unit?')">Deactivate</button>
+              {% else %}
+                <button class="btn btn-sm btn-outline-success" onclick="return confirm('Activate this unit?')">Activate</button>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if units|length == 0 %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">No units found.</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Unit" if unit else "Add Unit" }} - Staff Scheduler{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="mb-3">{{ "Edit Unit" if unit else "Add Unit" }}</h3>
+
+    <form method="post" action="{{ url_for('units.update_unit', unit_id=unit.id) if unit else url_for('units.create_unit') }}">
+      <div class="mb-3">
+        <label class="form-label">Unit Name</label>
+        <input class="form-control" name="unit_name" required value="{{ unit.unit_name if unit else '' }}">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Address (optional)</label>
+        <input class="form-control" name="address" value="{{ unit.address if unit else '' }}">
+      </div>
+
+      {% if unit %}
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if unit.is_active %}checked{% endif %}>
+        <label class="form-check-label" for="is_active">Active</label>
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">{{ "Save Changes" if unit else "Create Unit" }}</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('units.list_units') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
