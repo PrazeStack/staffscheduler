@@ -64,7 +64,11 @@ def group_assignments_by_day(assignments, period_start: date):
 
 
 def total_hours(assignments) -> float:
-    seconds = sum((a.end_datetime - a.start_datetime).total_seconds() for a in assignments)
+    seconds = 0.0
+    for a in assignments:
+        if not a.start_datetime or not a.end_datetime:
+            continue
+        seconds += (a.end_datetime - a.start_datetime).total_seconds()
     return round(seconds / 3600, 2)
 
 
@@ -133,6 +137,10 @@ def biweekly_by_unit(unit_id):
     a_w1 = [a for a in assignments if a.start_datetime < dt_start(week1_end)]
     a_w2 = [a for a in assignments if a.start_datetime >= dt_start(week2_start)]
 
+    week1_total = total_hours(a_w1)
+    week2_total = total_hours(a_w2)
+    biweek_total = round(week1_total + week2_total, 2)
+
     w1_by_day = group_assignments_by_day(a_w1, week1_start)
     w2_by_day = group_assignments_by_day(a_w2, week2_start)
 
@@ -161,9 +169,9 @@ def biweekly_by_unit(unit_id):
         week1_days=week1_days,
         week2_days=week2_days,
         # unit totals optional (usually not needed, but included)
-        week1_total_hours=None,
-        week2_total_hours=None,
-        biweek_total_hours=None,
+        week1_total_hours=week1_total,
+        week2_total_hours=week2_total,
+        biweek_total_hours=biweek_total,
     )
 
 

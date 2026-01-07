@@ -47,6 +47,8 @@ def create_app():
     from .schedule import schedule_bp
     from .recurring_requests import recurring_requests_bp
     from .recurring_assignments import recurring_assignments_bp
+    from .schedule.routes import schedule_bp
+    
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -54,9 +56,10 @@ def create_app():
     app.register_blueprint(units_bp)
     app.register_blueprint(assignments_bp)
     app.register_blueprint(requests_bp)
-    app.register_blueprint(schedule_bp, url_prefix="/schedule")
     app.register_blueprint(recurring_requests_bp)
     app.register_blueprint(recurring_assignments_bp)
+    app.register_blueprint(schedule_bp, url_prefix="/schedule")
+
 
     # ------------------
     # CLI Commands (ADMIN ONLY)
